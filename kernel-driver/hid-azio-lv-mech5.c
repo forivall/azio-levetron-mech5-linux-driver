@@ -328,6 +328,10 @@ static ssize_t azio_lv_mech5_store_led(struct device *device, struct device_attr
   return count;
 }
 
+// TODO: since this is actually a holtek device, sold by azio, change the name
+// appropriately
+// TODO: figure out how to change the button mapping for the additional included
+// SiGma Micro devices (so that the D1-D6 buttons map to something better than F1-F6)
 static const struct hid_device_id azio_lv_mech5_devices[] = {
   // 04d9:2819
   // { HID_USB_DEVICE(USB_VENDOR_ID_HOLTEK_ALT, USB_DEVICE_ID_AZIO_KEYBOARD_LEVETRON_MECH5) },
