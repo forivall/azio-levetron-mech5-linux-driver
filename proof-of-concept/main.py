@@ -46,12 +46,23 @@ class Mech5Keyboard:
         val = (special_keys and 0x01) | (volume_knob and 0x02)
         # return self.keyboard.write(0x00, array.array('B', [0x21, 0x09, 0x05, 0x02, 0x01, 0x00, 0x02, 0x00, 0x05, 0x03]))
 
-        self.keyboard.ctrl_transfer(
+        return self.keyboard.ctrl_transfer(
             bmRequestType=0x21,
             bRequest=0x09,
             wValue=0x0205,
             wIndex=1,
             data_or_wLength=[0x05, val])
+
+    def get_backlight(self):
+        # return self.keyboard.write(0x00, array.array('B', [0x21, 0x09, 0x05, 0x02, 0x01, 0x00, 0x02, 0x00, 0x05, 0x03]))
+
+        return self.keyboard.ctrl_transfer(
+            bmRequestType=0xa1,
+            bRequest=0x09,
+            wValue=0x0205,
+            wIndex=1,
+            # data_or_wLength=[0x05, val])
+            data_or_wLength=2)
 
     def get_keyboard_descriptor(self):
         return self.keyboard.ctrl_transfer(
@@ -118,15 +129,15 @@ def watch_special_keys(dev=None):
 
         while True:
             try:
-                data = endpoint.read(endpoint.wMaxPacketSize, timeout=10000)
-                packet_id = data[0]
-                data = data[1:]
+                report = endpoint.read(endpoint.wMaxPacketSize, timeout=10000)
+                report_id = report[0]
+                data = report[1:]
                 if data[1] == 0x13 and data[0] in KEYMAP:
                     print('Pressed', KEYMAP[data[0]])
                 elif data[0] == 0x00 and data[1] == 0x00:
                     print('Released')
                 else:
-                    print('packet id:', packet_id)
+                    print('report id:', report_id)
                     print('data:     ', data)
             except usb.core.USBError as ex:
                 if ex.errno == 110:
