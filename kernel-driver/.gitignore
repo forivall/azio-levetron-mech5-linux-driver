@@ -1,0 +1,10 @@
+hid-azio-lv-mech5.ko
+hid-azio-lv-mech5.mod.c
+hid-azio-lv-mech5.mod.o
+hid-azio-lv-mech5.o
+modules.order
+Module.symvers
+.hid-azio-lv-mech5.ko.cmd
+.hid-azio-lv-mech5.mod.o.cmd
+.hid-azio-lv-mech5.o.cmd
+.tmp_versions
