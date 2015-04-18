@@ -99,28 +99,35 @@ static inline void azio_lv_mech5_release_keys(struct azio_lv_mech5_data* mech5_d
   u8 i;
   for (i = 0; i < LEVETRON_MECH5_KEY_MAP_SIZE; i++) {
     if (levetron_mech5_key_map[i] != 0 && BIT_AT(mech5_data->macro_button_state, i)) {
+      printk("azio-levetron-driver: releasing: %x %x 0\n", i, levetron_mech5_key_map[i]);
       input_report_key(mech5_data->input_dev, levetron_mech5_key_map[i], 0);
     }
   }
   mech5_data->macro_button_state = 0;
 }
+
 static int azio_lv_mech5_extra_key_event(struct hid_device *hdev, struct hid_report *report, u8 *data, int size) {
   u8 report_id;
   u8 key_id;
   struct azio_lv_mech5_data* mech5_data = azio_lv_mech5_get_data(hdev);
   printk("azio-levetron-driver: key event size: %d\n", size);
-  if (mech5_data == NULL || size < 3 || (report_id = data[0]) != 3) {
+  if (mech5_data != NULL && size >= 3) {
+    printk("azio-levetron-driver: raw data: %x %x %x\n", data[0], data[1], data[2]);
+  }
+  if (mech5_data == NULL || size < 3 || (report_id = data[0]) != 0x02) {
     return 1; /* cannot handle the event */
   }
 
   if (data[2] == 0x13 && (key_id = data[1]) > 0 && key_id < LEVETRON_MECH5_KEY_MAP_SIZE) {
     if (mech5_data->keyup_mode == KEYUP_ON_NEXT_PRESS) { azio_lv_mech5_release_keys(mech5_data); }
     // Key down
+    printk("azio-levetron-driver: reporting: %x %x 1\n", key_id, levetron_mech5_key_map[key_id]);
     input_report_key(mech5_data->input_dev, levetron_mech5_key_map[key_id], 1);
     mech5_data->macro_button_state |= (1<<(key_id));
   } else if (data[2] == 0x00 && data[1] == 0x00) {
     azio_lv_mech5_release_keys(mech5_data);
   }
+  printk("azio-levetron-driver: syncing: %p\n", mech5_data->input_dev);
   input_sync(mech5_data->input_dev);
   return 1;
 }
@@ -132,19 +139,16 @@ static int azio_lv_mech5_extra_key_event(struct hid_device *hdev, struct hid_rep
 //     return 1;
 // }
 
-static int azio_lv_mech5_raw_event(struct hid_device *hdev, struct hid_report *report, u8 *data, int size)
-{
+static int azio_lv_mech5_raw_event(struct hid_device *hdev, struct hid_report *report, u8 *data, int size) {
+  printk("azio-levetron-driver: event %x for %p\n",report->id, hdev);
   switch(report->id) {
-    case 3: return azio_lv_mech5_extra_key_event(hdev, report, data, size);
-    // case ???: return azio_lv_mech5_extra_led_event(hdev, report, data, size);
-    default:
-      printk("azio-levetron-driver: unknown report id: %d\n", report->id);
-      return 0;
+    case 2: return azio_lv_mech5_extra_key_event(hdev, report, data, size);
+    default: return 0;
   }
 }
 
-static int azio_lv_mech5_input_mapping(struct hid_device *hdev, struct hid_input *hi, struct hid_field *field, struct hid_usage *usage, unsigned long **bit, int *max)
-{
+// only used so that we have a local handle to the input device
+static int azio_lv_mech5_input_mapping(struct hid_device *hdev, struct hid_input *hi, struct hid_field *field, struct hid_usage *usage, unsigned long **bit, int *max) {
   struct azio_lv_mech5_data* data = azio_lv_mech5_get_data(hdev);
   if (data != NULL && data->input_dev == NULL) {
     data->input_dev= hi->input;
@@ -165,107 +169,110 @@ enum req_type {
 // #endif
 // }
 
+static int azio_lv_mech5_has_led_control(struct azio_lv_mech5_data *mech5_data) {
+  // struct list_head *feature_report_list = &hdev->report_enum[HID_FEATURE_REPORT].report_list;
+  // if (list_empty(feature_report_list)) {
+  //   return 0; /* Currently, the keyboard registers as two different devices */
+  // }
+  return 1;
+}
+
 static int azio_lv_mech5_initialize(struct hid_device *hdev) {
-    int ret = 0;
-    struct azio_lv_mech5_data *data;
-    struct list_head *feature_report_list = &hdev->report_enum[HID_FEATURE_REPORT].report_list;
-    struct hid_report *report;
+  int ret = 0;
+  struct azio_lv_mech5_data *data;
+  // struct hid_report *report;
 
-    if (list_empty(feature_report_list)) {
-        return 0; /* Currently, the keyboard registers as two different devices */
-    }
+  if (!azio_lv_mech5_has_led_control(data)) { return 0; }
 
-    data = azio_lv_mech5_get_data(hdev);
-    list_for_each_entry(report, feature_report_list, list) {
-        printk("azio-levetron-driver: report id: %d\n", report->id);
-        // switch(report->id) {
-        //     // case 6: data->led_report= report; break;
-        // }
-    }
+  printk("azio-levetron-driver: creating %p", hdev);
 
-    ret= sysfs_create_group(&hdev->dev.kobj, &data->attr_group);
-    return ret;
+  data = azio_lv_mech5_get_data(hdev);
+  // list_for_each_entry(report, feature_report_list, list) {
+  //   printk("azio-levetron-driver: report id: %d\n", report->id);
+  // }
+
+  ret = sysfs_create_group(&hdev->dev.kobj, &data->attr_group);
+  return ret;
 }
 
-static struct azio_lv_mech5_data* azio_lv_mech5_create(struct hid_device *hdev)
-{
-    struct azio_lv_mech5_data* data;
-    data= kzalloc(sizeof(struct azio_lv_mech5_data), GFP_KERNEL);
-    if (data == NULL) {
-        return NULL;
-    }
+static struct azio_lv_mech5_data* azio_lv_mech5_create(struct hid_device *hdev) {
+  struct azio_lv_mech5_data* mech5_data;
+  mech5_data = kzalloc(sizeof(struct azio_lv_mech5_data), GFP_KERNEL);
+  if (mech5_data == NULL) {
+    return NULL;
+  }
+  mech5_data->keyup_mode = 0;
 
-    data->attr_group.name= "azio-levetron-mech5";
-    data->attr_group.attrs= azio_lv_mech5_attrs;
-    data->hdev= hdev;
+  mech5_data->attr_group.name = "azio-levetron-mech5";
+  mech5_data->attr_group.attrs = azio_lv_mech5_attrs;
+  mech5_data->hdev = hdev;
 
-    spin_lock_init(&data->lock);
-    init_completion(&data->ready);
-    return data;
+  spin_lock_init(&mech5_data->lock);
+  init_completion(&mech5_data->ready);
+  return mech5_data;
 }
 
-static int azio_lv_mech5_probe(struct hid_device *hdev, const struct hid_device_id *id)
-{
-    int ret;
-    struct azio_lv_mech5_data *data;
+static int azio_lv_mech5_probe(struct hid_device *hdev, const struct hid_device_id *id) {
+  int ret;
+  struct azio_lv_mech5_data *data;
 
-    data = azio_lv_mech5_create(hdev);
-    if (data == NULL) {
-        dev_err(&hdev->dev, "can't allocate space for Azio Levetron Mech5 device attributes\n");
-        ret= -ENOMEM;
-        goto err_free;
-    }
+  data = azio_lv_mech5_create(hdev);
+  if (data == NULL) {
+    dev_err(&hdev->dev, "can't allocate space for Azio Levetron Mech5 device attributes\n");
+    ret = -ENOMEM;
+    goto err_free;
+  }
 
-    data->usbdev = interface_to_usbdev(to_usb_interface(hdev->dev.parent));
+  data->usbdev = interface_to_usbdev(to_usb_interface(hdev->dev.parent));
 
-    hid_set_drvdata(hdev, data);
+  hid_set_drvdata(hdev, data);
 
-    /*
-     * Without this, the device would send a first report with a key down event for
-     * certain buttons, but never the key up event
-     */
-    hdev->quirks |= HID_QUIRK_NOGET;
+  /*
+   * Without this, the device would send a first report with a key down event for
+   * certain buttons, but never the key up event
+   */
+  // hdev->quirks |= HID_QUIRK_NOGET;
+  printk("azio-levetron-driver: quirks: %x\n", hdev->quirks);
 
-    ret = hid_parse(hdev);
-    if (ret) {
-        hid_err(hdev, "parse failed\n");
-        goto err_free;
-    }
+  ret = hid_parse(hdev);
+  if (ret) {
+    hid_err(hdev, "parse failed\n");
+    goto err_free;
+  }
 
-    ret = hid_hw_start(hdev, HID_CONNECT_DEFAULT);
-    if (ret) {
-        hid_err(hdev, "hw start failed\n");
-        goto err_free;
-    }
+  ret = hid_hw_start(hdev, HID_CONNECT_DEFAULT);
+  if (ret) {
+    hid_err(hdev, "hw start failed\n");
+    goto err_free;
+  }
 
-    ret= azio_lv_mech5_initialize(hdev);
-    if (ret) {
-        ret = -ret;
-        hid_hw_stop(hdev);
-        goto err_free;
-    }
+  ret = azio_lv_mech5_initialize(hdev);
+  if (ret) {
+    ret = -ret;
+    hid_hw_stop(hdev);
+    goto err_free;
+  }
 
-    return 0;
+  return 0;
 
 err_free:
-    if (data != NULL) {
-        kfree(data);
-    }
-    return ret;
+  if (data != NULL) {
+      kfree(data);
+  }
+  return ret;
 }
 
 static void azio_lv_mech5_remove(struct hid_device *hdev)
 {
-    struct azio_lv_mech5_data* data = azio_lv_mech5_get_data(hdev);
-    struct list_head *feature_report_list = &hdev->report_enum[HID_FEATURE_REPORT].report_list;
+  struct azio_lv_mech5_data* data = azio_lv_mech5_get_data(hdev);
 
-    if (data != NULL && !list_empty(feature_report_list))
-        sysfs_remove_group(&hdev->dev.kobj, &data->attr_group);
-
-    hid_hw_stop(hdev);
-    if (data != NULL) {
-        kfree(data);
-    }
+  if (data != NULL && azio_lv_mech5_has_led_control(data)) {
+    sysfs_remove_group(&hdev->dev.kobj, &data->attr_group);
+  }
+  hid_hw_stop(hdev);
+  if (data != NULL) {
+    kfree(data);
+  }
 }
 
 static ssize_t azio_lv_mech5_show_led(struct device *device, struct device_attribute *attr, char *buf)
@@ -285,8 +292,7 @@ static ssize_t azio_lv_mech5_show_led(struct device *device, struct device_attri
 
 
 
-static ssize_t azio_lv_mech5_store_led(struct device *device, struct device_attribute *attr, const char *buf, size_t count)
-{
+static ssize_t azio_lv_mech5_store_led(struct device *device, struct device_attribute *attr, const char *buf, size_t count) {
   int retval;
   unsigned long key_mask;
   u8 led_mask;
@@ -299,14 +305,15 @@ static ssize_t azio_lv_mech5_store_led(struct device *device, struct device_attr
   retval = kstrtoul(buf, 10, &key_mask);
   if (retval) { return retval; }
 
-  led_mask= (key_mask) & 0xF;
-  led_mask= led_mask > 4 ? 4 : led_mask;
+  led_mask = (key_mask) & 0xF;
+  led_mask = led_mask > 4 ? 4 : led_mask;
 
   control_msg_data[1] = led_mask;
 
 	pipe = usb_sndctrlpipe(data->usbdev, 0);
 
-  spin_lock(&data->lock);
+  // TODO: should this run in an atomic context? raw urb would have to be used then.
+  // spin_lock(&data->lock);
 
 	retval = usb_control_msg(data->usbdev, pipe,
     USB_REQ_SET_CONFIGURATION, // 0x09
@@ -317,13 +324,14 @@ static ssize_t azio_lv_mech5_store_led(struct device *device, struct device_attr
     WAIT_TIME_OUT);
 
   data->led = led_mask;
-  spin_unlock(&data->lock);
+  // spin_unlock(&data->lock);
   return count;
 }
 
 static const struct hid_device_id azio_lv_mech5_devices[] = {
   // 04d9:2819
-  { HID_USB_DEVICE(USB_VENDOR_ID_HOLTEK_ALT, USB_DEVICE_ID_AZIO_KEYBOARD_LEVETRON_MECH5) },
+  // { HID_USB_DEVICE(USB_VENDOR_ID_HOLTEK_ALT, USB_DEVICE_ID_AZIO_KEYBOARD_LEVETRON_MECH5) },
+  { HID_USB_DEVICE(0x04d9, 0x2819) },
   // 1c4f:0016
   // { HID_USB_DEVICE(USB_VENDOR_ID_SIGMA_MICRO, USB_DEVICE_ID_AZIO_KEYBOARD_LEVETRON_MECH5_NUMPAD_OR_ATTACHMENT) },
   { }
@@ -335,22 +343,23 @@ static struct hid_driver azio_lv_mech5_driver = {
   .id_table = azio_lv_mech5_devices,
   .raw_event = azio_lv_mech5_raw_event,
   .input_mapping = azio_lv_mech5_input_mapping,
-  .probe= azio_lv_mech5_probe,
-  .remove= azio_lv_mech5_remove,
+  .probe = azio_lv_mech5_probe,
+  .remove = azio_lv_mech5_remove,
 };
 
-static int __init azio_lv_mech5_init(void)
-{
-  return hid_register_driver(&azio_lv_mech5_driver);
-}
-
-static void __exit azio_lv_mech5_exit(void)
-{
-  hid_unregister_driver(&azio_lv_mech5_driver);
-}
-
-module_init(azio_lv_mech5_init);
-module_exit(azio_lv_mech5_exit);
+// static int __init azio_lv_mech5_init(void) {
+//   printk("azio-levetron-driver: register\n");
+//   return hid_register_driver(&azio_lv_mech5_driver);
+// }
+//
+// static void __exit azio_lv_mech5_exit(void) {
+//   printk("azio-levetron-driver: unregister\n");
+//   hid_unregister_driver(&azio_lv_mech5_driver);
+// }
+//
+// module_init(azio_lv_mech5_init);
+// module_exit(azio_lv_mech5_exit);
+module_hid_driver(azio_lv_mech5_driver);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Jordan Klassen <jordan@klassen.me.uk>");
