@@ -1,9 +1,7 @@
 Azio Levetron Mech5 Keyboard Driver
 ===================================
 
-Proof of Concept code to talk to the azio levetron keyboard
-
-
+Linux Driver for the azio levetron mech5 keyboard
 
 ## TODO
 
