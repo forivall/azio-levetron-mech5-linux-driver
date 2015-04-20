@@ -21,15 +21,10 @@
 #include <linux/usb.h>
 #include <linux/version.h>
 
-// #include "usbhid/usbhid.h"
+#include "usbhid/usbhid.h"
+#include "hid-ids.h"
 
-// in hid-ids.h
-#ifndef USB_VENDOR_ID_HOLTEK_ALT
-#define USB_VENDOR_ID_HOLTEK_ALT		0x04d9
-#endif
-
-#define USB_VENDOR_ID_AZIO USB_VENDOR_ID_HOLTEK_ALT
-#define USB_DEVICE_ID_AZIO_KEYBOARD_LEVETRON_MECH5 0xc24d
+#define USB_VENDOR_ID_HOLTEK_ALT_KEYBOARD_AZIO_LEVETRON_MECH5 0x2819
 
 // Options for key-up behaviour
 // Since the keyboard only reports a generic keyup event for the special keys,
@@ -73,7 +68,7 @@ struct azio_lv_mech5_data {
 
   u8 macro_button_state; /* Holds the last state of the ABswitch and AB1-AB6 buttons. Required to know which buttons were pressed and which to released */
   struct hid_device *hdev;
-	struct usb_device *usbdev;
+  struct usb_device *usbdev;
   struct input_dev *input_dev;
   struct attribute_group attr_group;
 
@@ -174,7 +169,7 @@ static int azio_lv_mech5_has_led_control(struct azio_lv_mech5_data *mech5_data) 
   // if (list_empty(feature_report_list)) {
   //   return 0; /* Currently, the keyboard registers as two different devices */
   // }
-  return 1;
+  return mech5_data->hdev->type == HID_TYPE_OTHER;
 }
 
 static int azio_lv_mech5_initialize(struct hid_device *hdev) {
@@ -182,11 +177,10 @@ static int azio_lv_mech5_initialize(struct hid_device *hdev) {
   struct azio_lv_mech5_data *data;
   // struct hid_report *report;
 
-  if (!azio_lv_mech5_has_led_control(data)) { return 0; }
-
-  printk("azio-levetron-driver: creating %p", hdev);
-
   data = azio_lv_mech5_get_data(hdev);
+
+  if (!azio_lv_mech5_has_led_control(data)) { return 0; }
+  printk("azio-levetron-driver: creating %p\n", hdev);
   // list_for_each_entry(report, feature_report_list, list) {
   //   printk("azio-levetron-driver: report id: %d\n", report->id);
   // }
@@ -232,7 +226,7 @@ static int azio_lv_mech5_probe(struct hid_device *hdev, const struct hid_device_
    * certain buttons, but never the key up event
    */
   // hdev->quirks |= HID_QUIRK_NOGET;
-  printk("azio-levetron-driver: quirks: %x\n", hdev->quirks);
+  // printk("azio-levetron-driver: quirks: %x\n", hdev->quirks);
 
   ret = hid_parse(hdev);
   if (ret) {
@@ -262,8 +256,7 @@ err_free:
   return ret;
 }
 
-static void azio_lv_mech5_remove(struct hid_device *hdev)
-{
+static void azio_lv_mech5_remove(struct hid_device *hdev) {
   struct azio_lv_mech5_data* data = azio_lv_mech5_get_data(hdev);
 
   if (data != NULL && azio_lv_mech5_has_led_control(data)) {
@@ -275,8 +268,7 @@ static void azio_lv_mech5_remove(struct hid_device *hdev)
   }
 }
 
-static ssize_t azio_lv_mech5_show_led(struct device *device, struct device_attribute *attr, char *buf)
-{
+static ssize_t azio_lv_mech5_show_led(struct device *device, struct device_attribute *attr, char *buf) {
   struct azio_lv_mech5_data* data = hid_get_drvdata(dev_get_drvdata(device->parent));
   if (data != NULL) {
     // TODO: figure out if the state can be read in any way from the device
@@ -289,8 +281,6 @@ static ssize_t azio_lv_mech5_show_led(struct device *device, struct device_attri
   }
   return 0;
 }
-
-
 
 static ssize_t azio_lv_mech5_store_led(struct device *device, struct device_attribute *attr, const char *buf, size_t count) {
   int retval;
@@ -310,12 +300,12 @@ static ssize_t azio_lv_mech5_store_led(struct device *device, struct device_attr
 
   control_msg_data[1] = led_mask;
 
-	pipe = usb_sndctrlpipe(data->usbdev, 0);
+  pipe = usb_sndctrlpipe(data->usbdev, 0);
 
   // TODO: should this run in an atomic context? raw urb would have to be used then.
   // spin_lock(&data->lock);
 
-	retval = usb_control_msg(data->usbdev, pipe,
+  retval = usb_control_msg(data->usbdev, pipe,
     USB_REQ_SET_CONFIGURATION, // 0x09
     USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE, // 0x21
     0x0205, // magic?
@@ -328,14 +318,11 @@ static ssize_t azio_lv_mech5_store_led(struct device *device, struct device_attr
   return count;
 }
 
-// TODO: since this is actually a holtek device, sold by azio, change the name
-// appropriately
 // TODO: figure out how to change the button mapping for the additional included
 // SiGma Micro devices (so that the D1-D6 buttons map to something better than F1-F6)
 static const struct hid_device_id azio_lv_mech5_devices[] = {
   // 04d9:2819
-  // { HID_USB_DEVICE(USB_VENDOR_ID_HOLTEK_ALT, USB_DEVICE_ID_AZIO_KEYBOARD_LEVETRON_MECH5) },
-  { HID_USB_DEVICE(0x04d9, 0x2819) },
+  { HID_USB_DEVICE(USB_VENDOR_ID_HOLTEK_ALT, USB_VENDOR_ID_HOLTEK_ALT_KEYBOARD_AZIO_LEVETRON_MECH5) },
   // 1c4f:0016
   // { HID_USB_DEVICE(USB_VENDOR_ID_SIGMA_MICRO, USB_DEVICE_ID_AZIO_KEYBOARD_LEVETRON_MECH5_NUMPAD_OR_ATTACHMENT) },
   { }

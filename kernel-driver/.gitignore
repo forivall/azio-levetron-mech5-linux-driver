@@ -8,3 +8,5 @@ Module.symvers
 .hid-azio-lv-mech5.mod.o.cmd
 .hid-azio-lv-mech5.o.cmd
 .tmp_versions
+hid-ids.h
+usbhid/usbhid.h
