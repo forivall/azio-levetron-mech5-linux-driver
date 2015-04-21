@@ -1,0 +1,16 @@
+[    7.636529] sound hdaudioC0D0:      Line=0x1a
+[   12.545870] hid-generic 0003:1C4F:0016.0002: usb_submit_urb(ctrl) failed: -1
+[   12.545899] hid-generic 0003:1C4F:0016.0002: timeout initializing reports
+[   12.546039] input: SIGMACH1P USB Keyboard as /devices/pci0000:00/0000:00:1c.4/0000:04:00.0/usb5/5-1/5-1.1/5-1.1:1.1/0003:1C4F:0016.0002/input/input18
+[   12.546315] hid-generic 0003:1C4F:0016.0002: input,hidraw3: USB HID v1.10 Device [SIGMACH1P USB Keyboard] on usb-0000:04:00.0-1.1/input1
+[   12.546540] input: SIGMACH1P USB Keyboard as /devices/pci0000:00/0000:00:1c.4/0000:04:00.0/usb5/5-1/5-1.4/5-1.4:1.0/0003:1C4F:0016.0003/input/input19
+[   12.546855] hid-generic 0003:1C4F:0016.0003: input,hidraw4: USB HID v1.10 Keyboard [SIGMACH1P USB Keyboard] on usb-0000:04:00.0-1.4/input0
+[   22.536418] hid-generic 0003:1C4F:0016.0004: usb_submit_urb(ctrl) failed: -1
+[   22.536446] hid-generic 0003:1C4F:0016.0004: timeout initializing reports
+[   22.536569] input: SIGMACH1P USB Keyboard as /devices/pci0000:00/0000:00:1c.4/0000:04:00.0/usb5/5-1/5-1.4/5-1.4:1.1/0003:1C4F:0016.0004/input/input20
+[   22.536674] hid-generic 0003:1C4F:0016.0004: input,hidraw5: USB HID v1.10 Device [SIGMACH1P USB Keyboard] on usb-0000:04:00.0-1.4/input1
+[   22.536862] input: HID 04d9:2819 as /devices/pci0000:00/0000:00:1c.4/0000:04:00.0/usb5/5-1/5-1.2/5-1.2.1/5-1.2.1:1.0/0003:04D9:2819.0005/input/input21
+[   22.537174] hid-generic 0003:04D9:2819.0005: input,hidraw6: USB HID v1.10 Keyboard [HID 04d9:2819] on usb-0000:04:00.0-1.2.1/input0
+
+
+# TODO: improve bootup perf time by fixing these timeouts

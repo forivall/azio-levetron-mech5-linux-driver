@@ -57,6 +57,101 @@ static const u8 levetron_mech5_key_map[LEVETRON_MECH5_KEY_MAP_SIZE] = {
   0
 };
 
+// static u8 azio_lv_keyboard_descriptor[65] = {
+//   0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+//   0x09, 0x06,        // Usage (Keyboard)
+//   0xA1, 0x01,        // Collection (Application)
+//   0x05, 0x07,        //   Usage Page (Kbrd/Keypad)
+//   0x19, 0xE0,        //   Usage Minimum (0xE0)
+//   0x29, 0xE7,        //   Usage Maximum (0xE7)
+//   0x15, 0x00,        //   Logical Minimum (0)
+//   0x25, 0x01,        //   Logical Maximum (1)
+//   0x75, 0x01,        //   Report Size (1)
+//   0x95, 0x08,        //   Report Count (8)
+//   0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+//   0x95, 0x01,        //   Report Count (1)
+//   0x75, 0x08,        //   Report Size (8)
+//   0x81, 0x01,        //   Input (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+//   0x95, 0x03,        //   Report Count (3)
+//   0x75, 0x01,        //   Report Size (1)
+//   0x05, 0x08,        //   Usage Page (LEDs)
+//   0x19, 0x01,        //   Usage Minimum (Num Lock)
+//   0x29, 0x03,        //   Usage Maximum (Scroll Lock)
+//   0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+//   0x95, 0x05,        //   Report Count (5)
+//   0x75, 0x01,        //   Report Size (1)
+//   0x91, 0x01,        //   Output (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+//   0x95, 0x06,        //   Report Count (6)
+//   0x75, 0x08,        //   Report Size (8)
+//   0x15, 0x00,        //   Logical Minimum (0)
+//   0x26, 0xFF, 0x00,  //   Logical Maximum (255)
+//   0x05, 0x07,        //   Usage Page (Kbrd/Keypad)
+//   0x19, 0x00,        //   Usage Minimum (0x00)
+//   0x2A, 0xFF, 0x00,  //   Usage Maximum (0xFF)
+//   0x81, 0x00,        //   Input (Data,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+//   0xC0,              // End Collection
+//   // 65 bytes
+// };
+
+static __u8 azio_lv_macro_keys_descriptor[] = {
+  0x05, 0x0C,        // Usage Page (Consumer)
+  0x09, 0x01,        // Usage (Consumer Control)
+  0xA1, 0x01,        // Collection (Application)
+  0x85, 0x02,        //   Report ID (2)
+  0x19, 0x00,        //   Usage Minimum (Unassigned)
+  0x2A, 0xFF, 0x1F,  //   Usage Maximum (0x1FFF)
+  0x15, 0x00,        //   Logical Minimum (0)
+  0x26, 0xFF, 0x1F,  //   Logical Maximum (8191)
+  0x75, 0x10,        //   Report Size (16)
+  0x95, 0x01,        //   Report Count (1)
+  0x81, 0x00,        //   Input (Data,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  0xC0,              // End Collection
+  0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+  0x09, 0x80,        // Usage (Sys Control)
+  0xA1, 0x01,        // Collection (Application)
+  0x85, 0x03,        //   Report ID (3)
+  0x75, 0x01,        //   Report Size (1)
+  0x95, 0x03,        //   Report Count (3)
+  0x15, 0x00,        //   Logical Minimum (0)
+  0x25, 0x01,        //   Logical Maximum (1)
+  0x09, 0x81,        //   Usage (Sys Power Down)
+  0x09, 0x82,        //   Usage (Sys Sleep)
+  0x09, 0x83,        //   Usage (Sys Wake Up)
+  0x81, 0x62,        //   Input (Data,Var,Abs,No Wrap,Linear,No Preferred State,Null State)
+  0x95, 0x05,        //   Report Count (5)
+  0x81, 0x03,        //   Input (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  0xC0,              // End Collection
+  0x05, 0x08,        // Usage Page (LEDs)
+  0x09, 0x89,        // Usage (0x89)
+  0xA1, 0x01,        // Collection (Application)
+  0x85, 0x05,        //   Report ID (5)
+  0x19, 0x81,        //   Usage Minimum (0x81)
+  0x29, 0x88,        //   Usage Maximum (0x88)
+  0x15, 0x00,        //   Logical Minimum (0)
+  0x25, 0x01,        //   Logical Maximum (1)
+  0x95, 0x08,        //   Report Count (8)
+  0x75, 0x01,        //   Report Size (1)
+  0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+  0xC0,              // End Collection
+  // 77 bytes
+
+  // snipped from logitech report descriptors
+  0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+  0x09, 0x06,        // Usage (Keyboard)
+  0xA1, 0x01,        // Collection (Application)
+  0x05, 0x07,        //   Usage Page (Kbrd/Keypad)
+  0x19, 0x00,        //   Usage Minimum (0x00)
+  0x29, 0xE7,        //   Usage Maximum (0xE7)
+  0x15, 0x00,        //   Logical Minimum (0)
+  0x26, 0xE7, 0x00,  //   Logical Maximum (231)
+  0x75, 0x08,        //   Report Size (8)
+  0x95, 0x14,        //   Report Count (20)
+  0x85, 0x07,        //   Report ID (7)
+  0x81, 0x00,        //   Input (Data,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+  0xC0,              // End Collection
+  // + 26 bytes
+};
+
 /* Convenience macros */
 #define azio_lv_mech5_get_data(hdev) \
   ((struct azio_lv_mech5_data *)(hid_get_drvdata(hdev)))
@@ -142,12 +237,61 @@ static int azio_lv_mech5_raw_event(struct hid_device *hdev, struct hid_report *r
   }
 }
 
-// only used so that we have a local handle to the input device
-static int azio_lv_mech5_input_mapping(struct hid_device *hdev, struct hid_input *hi, struct hid_field *field, struct hid_usage *usage, unsigned long **bit, int *max) {
-  struct azio_lv_mech5_data* data = azio_lv_mech5_get_data(hdev);
-  if (data != NULL && data->input_dev == NULL) {
-    data->input_dev= hi->input;
+/*
+ * the macro keypad has a wrong usage maximum
+ */
+static __u8 *azio_lv_mech5_report_fixup(struct hid_device *hdev, __u8 *rdesc,
+    unsigned int *rsize) {
+  if (rsize == NULL) {
+    return rdesc;
   }
+  printk("azio-levetron-driver: report_fixup: rsize = %d\n", *rsize);
+  printk("azio-levetron-driver: report_fixup: rdesc[0..8] = %x %x %x %x %x %x %x %x\n", rdesc[0], rdesc[1], rdesc[2], rdesc[3], rdesc[4], rdesc[5], rdesc[6], rdesc[7]);
+  if (*rsize > 65 && rdesc[0] == 0x05 && rdesc[1] == 0x0C && rdesc[2] == 0x09 && rdesc[3] == 0x01) {
+    hid_info(hdev, "fixing up Azio Levetron macro keypad report descriptor\n");
+    rdesc = azio_lv_macro_keys_descriptor;
+    *rsize = sizeof(azio_lv_macro_keys_descriptor);
+  }
+  return rdesc;
+}
+
+// map the wierd control to a keyboard control
+// TODO: once the input mapping works, the custom raw event handling probably isn't needed unless
+// i still want to implement custom keyup handling
+static int azio_lv_mech5_input_mapping(struct hid_device *hdev,
+    struct hid_input *hinput, struct hid_field *field, struct hid_usage *usage,
+    unsigned long **bit, int *max) {
+  struct azio_lv_mech5_data* data = azio_lv_mech5_get_data(hdev);
+
+  if (hinput != NULL && hinput->report != NULL) {
+    printk("azio-levetron-driver: input_mapping: hinput->report->id = %d\n", hinput->report->id);
+    printk("azio-levetron-driver: input_mapping: hinput->report->type = %d\n", hinput->report->type);
+    printk("azio-levetron-driver: input_mapping: hinput->report->maxfield = %d\n", hinput->report->maxfield);
+    printk("azio-levetron-driver: input_mapping: hinput->report->size = %d\n", hinput->report->size);
+  }
+  if (field != NULL) {
+    // printk("azio-levetron-driver: input_mapping: field->physical = %d\n", field->physical);
+    // printk("azio-levetron-driver: input_mapping: field->logical = %d\n", field->logical);
+    // printk("azio-levetron-driver: input_mapping: field->application = %x\n", field->application);
+    // printk("azio-levetron-driver: input_mapping: field->maxusage = %d\n", field->maxusage);
+  }
+  if (usage != NULL) {
+    if ((usage->hid & HID_USAGE_PAGE) == HID_UP_KEYBOARD) {
+      printk("azio-levetron-driver: input_mapping: usage->hid = %x\n", usage->hid);
+      if (data != NULL && data->input_dev == NULL) {
+        printk("mapping input\n");
+        data->input_dev= hinput->input;
+      }
+    }
+    // printk("azio-levetron-driver: input_mapping: usage->code = %d\n", usage->code);
+    // printk("azio-levetron-driver: input_mapping: usage->type = %d\n", usage->type);
+
+  }
+  // if (bit != NULL && *bit == NULL) { printk("azio-levetron-driver: input_mapping: *bit = %p\n", *bit); }
+  // if (bit != NULL && *bit != NULL) { printk("azio-levetron-driver: input_mapping: bit = %ld\n", **bit); }
+  // if (max != NULL) { printk("azio-levetron-driver: input_mapping: max = %d\n", *max); }
+
+
   return 0;
 }
 
@@ -165,10 +309,7 @@ enum req_type {
 // }
 
 static int azio_lv_mech5_has_led_control(struct azio_lv_mech5_data *mech5_data) {
-  // struct list_head *feature_report_list = &hdev->report_enum[HID_FEATURE_REPORT].report_list;
-  // if (list_empty(feature_report_list)) {
-  //   return 0; /* Currently, the keyboard registers as two different devices */
-  // }
+  // return mech5_data->hdev->maxcollection >= 1 && mech5_data->hdev->collection[0];
   return mech5_data->hdev->type == HID_TYPE_OTHER;
 }
 
@@ -333,6 +474,7 @@ static struct hid_driver azio_lv_mech5_driver = {
   .name = "hid-azio-lv-mech5",
   .id_table = azio_lv_mech5_devices,
   .raw_event = azio_lv_mech5_raw_event,
+  .report_fixup = azio_lv_mech5_report_fixup,
   .input_mapping = azio_lv_mech5_input_mapping,
   .probe = azio_lv_mech5_probe,
   .remove = azio_lv_mech5_remove,
