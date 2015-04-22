@@ -14,7 +14,7 @@ hid-ids.h:
 usbhid/usbhid.h:
 	curl -L https://github.com/torvalds/linux/raw/$(KGITTAG)/drivers/hid/usbhid/usbhid.h > usbhid/usbhid.h
 
-headers: hid-ids.h usbhid/usbhid.h
+headers: hid-ids.h
 clean-headers:
 	rm hid-ids.h usbhid/usbhid.h
 

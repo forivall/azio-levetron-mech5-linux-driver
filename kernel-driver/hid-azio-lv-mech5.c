@@ -21,7 +21,6 @@
 #include <linux/usb.h>
 #include <linux/version.h>
 
-#include "usbhid/usbhid.h"
 #include "hid-ids.h"
 
 #define USB_VENDOR_ID_HOLTEK_ALT_KEYBOARD_AZIO_LEVETRON_MECH5 0x2819
