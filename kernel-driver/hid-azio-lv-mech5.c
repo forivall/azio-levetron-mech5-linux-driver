@@ -189,7 +189,6 @@ static inline void azio_lv_mech5_release_keys(struct azio_lv_mech5_data* mech5_d
   u8 i;
   for (i = 0; i < LEVETRON_MECH5_KEY_MAP_SIZE; i++) {
     if (levetron_mech5_key_map[i] != 0 && BIT_AT(mech5_data->macro_button_state, i)) {
-      printk("azio-levetron-driver: releasing: %x %x 0\n", i, levetron_mech5_key_map[i]);
       input_report_key(mech5_data->input_dev, levetron_mech5_key_map[i], 0);
     }
   }
@@ -200,10 +199,6 @@ static int azio_lv_mech5_extra_key_event(struct hid_device *hdev, struct hid_rep
   u8 report_id;
   u8 key_id;
   struct azio_lv_mech5_data* mech5_data = azio_lv_mech5_get_data(hdev);
-  printk("azio-levetron-driver: key event size: %d\n", size);
-  if (mech5_data != NULL && size >= 3) {
-    printk("azio-levetron-driver: raw data: %x %x %x\n", data[0], data[1], data[2]);
-  }
   if (mech5_data == NULL || size < 3 || (report_id = data[0]) != 0x02) {
     return 1; /* cannot handle the event */
   }
@@ -211,13 +206,11 @@ static int azio_lv_mech5_extra_key_event(struct hid_device *hdev, struct hid_rep
   if (data[2] == 0x13 && (key_id = data[1]) > 0 && key_id < LEVETRON_MECH5_KEY_MAP_SIZE) {
     if (mech5_data->keyup_mode == KEYUP_ON_NEXT_PRESS) { azio_lv_mech5_release_keys(mech5_data); }
     // Key down
-    printk("azio-levetron-driver: reporting: %x %x 1\n", key_id, levetron_mech5_key_map[key_id]);
     input_report_key(mech5_data->input_dev, levetron_mech5_key_map[key_id], 1);
     mech5_data->macro_button_state |= (1<<(key_id));
   } else if (data[2] == 0x00 && data[1] == 0x00) {
     azio_lv_mech5_release_keys(mech5_data);
   }
-  printk("azio-levetron-driver: syncing: %p\n", mech5_data->input_dev);
   input_sync(mech5_data->input_dev);
   return 1;
 }
@@ -230,7 +223,6 @@ static int azio_lv_mech5_extra_key_event(struct hid_device *hdev, struct hid_rep
 // }
 
 static int azio_lv_mech5_raw_event(struct hid_device *hdev, struct hid_report *report, u8 *data, int size) {
-  printk("azio-levetron-driver: event %x for %p\n",report->id, hdev);
   switch(report->id) {
     case 2: return azio_lv_mech5_extra_key_event(hdev, report, data, size);
     default: return 0;
@@ -245,8 +237,6 @@ static __u8 *azio_lv_mech5_report_fixup(struct hid_device *hdev, __u8 *rdesc,
   if (rsize == NULL) {
     return rdesc;
   }
-  printk("azio-levetron-driver: report_fixup: rsize = %d\n", *rsize);
-  printk("azio-levetron-driver: report_fixup: rdesc[0..8] = %x %x %x %x %x %x %x %x\n", rdesc[0], rdesc[1], rdesc[2], rdesc[3], rdesc[4], rdesc[5], rdesc[6], rdesc[7]);
   if (*rsize > 65 && rdesc[0] == 0x05 && rdesc[1] == 0x0C && rdesc[2] == 0x09 && rdesc[3] == 0x01) {
     hid_info(hdev, "fixing up Azio Levetron macro keypad report descriptor\n");
     rdesc = azio_lv_macro_keys_descriptor;
@@ -263,35 +253,15 @@ static int azio_lv_mech5_input_mapping(struct hid_device *hdev,
     unsigned long **bit, int *max) {
   struct azio_lv_mech5_data* data = azio_lv_mech5_get_data(hdev);
 
-  if (hinput != NULL && hinput->report != NULL) {
-    printk("azio-levetron-driver: input_mapping: hinput->report->id = %d\n", hinput->report->id);
-    printk("azio-levetron-driver: input_mapping: hinput->report->type = %d\n", hinput->report->type);
-    printk("azio-levetron-driver: input_mapping: hinput->report->maxfield = %d\n", hinput->report->maxfield);
-    printk("azio-levetron-driver: input_mapping: hinput->report->size = %d\n", hinput->report->size);
+  if (usage == NULL) {
+    return 0;
   }
-  if (field != NULL) {
-    // printk("azio-levetron-driver: input_mapping: field->physical = %d\n", field->physical);
-    // printk("azio-levetron-driver: input_mapping: field->logical = %d\n", field->logical);
-    // printk("azio-levetron-driver: input_mapping: field->application = %x\n", field->application);
-    // printk("azio-levetron-driver: input_mapping: field->maxusage = %d\n", field->maxusage);
-  }
-  if (usage != NULL) {
-    if ((usage->hid & HID_USAGE_PAGE) == HID_UP_KEYBOARD) {
-      printk("azio-levetron-driver: input_mapping: usage->hid = %x\n", usage->hid);
-      if (data != NULL && data->input_dev == NULL) {
-        printk("mapping input\n");
-        data->input_dev= hinput->input;
-      }
+  // grab only the keyboard input type so that it's keyboard events that are generated, not wierd consumer control events
+  if ((usage->hid & HID_USAGE_PAGE) == HID_UP_KEYBOARD) {
+    if (data != NULL && data->input_dev == NULL) {
+      data->input_dev= hinput->input;
     }
-    // printk("azio-levetron-driver: input_mapping: usage->code = %d\n", usage->code);
-    // printk("azio-levetron-driver: input_mapping: usage->type = %d\n", usage->type);
-
   }
-  // if (bit != NULL && *bit == NULL) { printk("azio-levetron-driver: input_mapping: *bit = %p\n", *bit); }
-  // if (bit != NULL && *bit != NULL) { printk("azio-levetron-driver: input_mapping: bit = %ld\n", **bit); }
-  // if (max != NULL) { printk("azio-levetron-driver: input_mapping: max = %d\n", *max); }
-
-
   return 0;
 }
 
@@ -300,15 +270,8 @@ enum req_type {
     REQTYPE_WRITE
 };
 
-// static void hidhw_request(struct hid_device *hdev, struct hid_report *report, enum req_type reqtype) {
-// #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0)
-//     hid_hw_request(hdev, report, reqtype == REQTYPE_READ ? HID_REQ_GET_REPORT : HID_REQ_SET_REPORT);
-// #else
-//     usbhid_submit_report(hdev, report, reqtype == REQTYPE_READ ? USB_DIR_IN : USB_DIR_OUT);
-// #endif
-// }
-
 static int azio_lv_mech5_has_led_control(struct azio_lv_mech5_data *mech5_data) {
+  // TODO: instead, check for these flags at the beginning, and attach a flag to azio_lv_mech5_data
   // return mech5_data->hdev->maxcollection >= 1 && mech5_data->hdev->collection[0];
   return mech5_data->hdev->type == HID_TYPE_OTHER;
 }
@@ -321,10 +284,6 @@ static int azio_lv_mech5_initialize(struct hid_device *hdev) {
   data = azio_lv_mech5_get_data(hdev);
 
   if (!azio_lv_mech5_has_led_control(data)) { return 0; }
-  printk("azio-levetron-driver: creating %p\n", hdev);
-  // list_for_each_entry(report, feature_report_list, list) {
-  //   printk("azio-levetron-driver: report id: %d\n", report->id);
-  // }
 
   ret = sysfs_create_group(&hdev->dev.kobj, &data->attr_group);
   return ret;
@@ -362,13 +321,6 @@ static int azio_lv_mech5_probe(struct hid_device *hdev, const struct hid_device_
 
   hid_set_drvdata(hdev, data);
 
-  /*
-   * Without this, the device would send a first report with a key down event for
-   * certain buttons, but never the key up event
-   */
-  // hdev->quirks |= HID_QUIRK_NOGET;
-  // printk("azio-levetron-driver: quirks: %x\n", hdev->quirks);
-
   ret = hid_parse(hdev);
   if (ret) {
     hid_err(hdev, "parse failed\n");
@@ -392,7 +344,7 @@ static int azio_lv_mech5_probe(struct hid_device *hdev, const struct hid_device_
 
 err_free:
   if (data != NULL) {
-      kfree(data);
+    kfree(data);
   }
   return ret;
 }
@@ -480,6 +432,7 @@ static struct hid_driver azio_lv_mech5_driver = {
   .remove = azio_lv_mech5_remove,
 };
 
+// TODO: register a second driver for the D-keypad
 // static int __init azio_lv_mech5_init(void) {
 //   printk("azio-levetron-driver: register\n");
 //   return hid_register_driver(&azio_lv_mech5_driver);
