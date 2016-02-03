@@ -3,12 +3,16 @@ Azio Levetron Mech5 Keyboard Driver
 
 Linux Driver for the azio levetron mech5 keyboard
 
-## TODO
+## Features
 
-* macro buttons (a/b+a/b1-5) - they're bing detected, but keystrokes aren't being sent for some reason
+* Macro buttons (a/b+a/b1-5)
+* Toggling the lights
+  * demo: `for i in {0..3}; do echo $i | sudo tee /sys/bus/hid/devices/*:04D9:2819.*/azio-levetron-mech5/led; sleep 1; done`
+* [DKMS packaged in the AUR](https://aur.archlinux.org/packages/hid-azio-lv-mech5-dkms-git/)
+
+## TODO
 * Win on/off key & state (seems like it's not possible)
-* D1-6 Keys (default mapped to F1-6, try to remap, probably just with a patched hid descriptor)
-* test dkms, package for AUR
+* D1-6 Keys (default mapped to F1-6, they can be remapped with a patched hid descriptor)
 * only attach sysfs to one of the hid devices
 
 ## Protocol
