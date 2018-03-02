@@ -4,7 +4,7 @@
  *  Driver generates additional key events for the keys A/B1-5 and A/B key and
  *  supports setting the backlight setting of the macro keys and volume knob
  *
- *  Copyright (c) 2015 Jordan Klassen <Wattos@gmail.com>
+ *  Copyright (c) 2015 Emily Klassen <forivall@gmail.com>
  */
 
 /*
@@ -447,5 +447,5 @@ static struct hid_driver azio_lv_mech5_driver = {
 module_hid_driver(azio_lv_mech5_driver);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Jordan Klassen <jordan@klassen.me.uk>");
+MODULE_AUTHOR("Emily Klassen <forivall@gmail.com>");
 MODULE_DESCRIPTION("Azio Levetron Mech5 driver");
