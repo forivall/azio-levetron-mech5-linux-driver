@@ -79,5 +79,5 @@ Requires Python 3.4+ and PyUSB
 
 ## Acknowledgements
 
-[K900/g710](github.com/K900/g710)  
-[Wattos/logitech-g710-linux-driver](github.com/Wattos/logitech-g710-linux-driver)
+[K900/g710](https://github.com/K900/g710)  
+[Wattos/logitech-g710-linux-driver](https://github.com/Wattos/logitech-g710-linux-driver)
